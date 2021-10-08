@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\Article;
 use App\Entity\Comment;
+use App\Entity\Tag;
 use App\Form\ArticleType;
 use App\Form\CommentType;
 use App\Repository\ArticleRepository;
@@ -14,18 +15,42 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
 /**
- * @Route("/article")
+ * @Route("/")
  */
 class ArticleController extends AbstractController
 {
     /**
-     * @Route("/", name="article_index", methods={"GET"})
+     * @Route("/", name="article_index", methods={"GET","POST"})
      */
-    public function index(ArticleRepository $articleRepository): Response
+    public function index(ArticleRepository $articleRepository,Request $request): Response
     {
+        $em = $this->getDoctrine()->getManager();
+
+        $tags =  $em->getRepository(Tag::class)->findAll();
+        if ($request->request->get("search")){
+
+            $query = $em->createQuery(
+                "SELECT a FROM App\Entity\Article a
+                WHERE a.content LIKE Concat('%',:data,'%') OR a.name LIKE Concat('%',:data,'%')")
+                ->setParameter('data',$request->request->get("search"));
+
+            $res = $query->getResult();
+
+            return $this->render('article/index.html.twig', [
+                'articles' => $res,
+                'tags'=>$tags
+
+            ]);
+
+        }
+
         return $this->render('article/index.html.twig', [
             'articles' => $articleRepository->findAll(),
+            'tags'=>$tags
+
+
         ]);
+
     }
 
     /**

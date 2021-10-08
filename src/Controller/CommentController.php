@@ -3,7 +3,9 @@
 namespace App\Controller;
 
 use App\Entity\Comment;
+use App\Entity\Article;
 use App\Form\CommentType;
+use App\Repository\ArticleRepository;
 use App\Repository\CommentRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -33,19 +35,20 @@ class CommentController extends AbstractController
         $comment = new Comment();
         $form = $this->createForm(CommentType::class, $comment);
         $form->handleRequest($request);
+        $comment ->setCreatedAt(new \DateTime('today'));
+        $comment->setUser($this->getUser());
 
-        if ($form->isSubmitted() && $form->isValid()) {
-            $entityManager = $this->getDoctrine()->getManager();
+        $entityManager = $this->getDoctrine()->getManager();
+        $article = $entityManager->getRepository(Article::class)->find($request->request->get("article"));
+        $comment->setArticle($article);
+
+            $comment->setContent($request->request->get("comment"));
             $entityManager->persist($comment);
             $entityManager->flush();
 
-            return $this->redirectToRoute('comment_index', [], Response::HTTP_SEE_OTHER);
-        }
 
-        return $this->renderForm('comment/new.html.twig', [
-            'comment' => $comment,
-            'form' => $form,
-        ]);
+
+        return $this->redirectToRoute('article_index', [], Response::HTTP_SEE_OTHER);
     }
 
     /**
