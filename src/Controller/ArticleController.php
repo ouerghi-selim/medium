@@ -3,9 +3,12 @@
 namespace App\Controller;
 
 use App\Entity\Article;
+use App\Entity\Comment;
 use App\Form\ArticleType;
+use App\Form\CommentType;
 use App\Repository\ArticleRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -33,6 +36,8 @@ class ArticleController extends AbstractController
         $article = new Article();
         $form = $this->createForm(ArticleType::class, $article);
         $form->handleRequest($request);
+        $article->setUser($this->getUser());
+
 
         if ($form->isSubmitted() && $form->isValid()) {
             $entityManager = $this->getDoctrine()->getManager();
@@ -49,13 +54,29 @@ class ArticleController extends AbstractController
     }
 
     /**
-     * @Route("/{id}", name="article_show", methods={"GET"})
+     * @Route("/{id}", name="article_show", methods={"GET","POST"})
      */
-    public function show(Article $article): Response
+    public function show(Article $article,Request $request): Response
     {
-        return $this->render('article/show.html.twig', [
+        $comment = new Comment();
+        $form = $this->createForm(CommentType::class, $comment);
+        $form->handleRequest($request);
+        $comment ->setCreatedAt(new \DateTime('today'));
+        $comment->setUser($this->getUser());
+        $comment->setArticle($article);
+        if ($form->isSubmitted() && $form->isValid()) {
+            $entityManager = $this->getDoctrine()->getManager();
+            $entityManager->persist($comment);
+            $entityManager->flush();
+
+        }
+
+        return $this->renderForm('article/show.html.twig', [
             'article' => $article,
+            'comment' => $comment,
+            'form' => $form,
         ]);
+
     }
 
     /**
@@ -79,7 +100,7 @@ class ArticleController extends AbstractController
     }
 
     /**
-     * @Route("/{id}", name="article_delete", methods={"POST"})
+     * @Route("/{id}/delete", name="article_delete", methods={"POST"})
      */
     public function delete(Request $request, Article $article): Response
     {

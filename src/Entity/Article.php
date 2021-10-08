@@ -72,6 +72,9 @@ class Article
 
     public function __construct()
     {
+
+        $this->setCreatedAt(new \DateTime());
+        $this->setUpdateAt(new \DateTime());
         $this->reactions = new ArrayCollection();
         $this->comments = new ArrayCollection();
         $this->tags = new ArrayCollection();

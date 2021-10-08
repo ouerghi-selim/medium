@@ -1,45 +1,85 @@
 {% extends 'base.html.twig' %}
 
 {% block title %}Article index{% endblock %}
+{% block stylesheets %}
+    {{ parent() }}
+    {# bootstrap css #}
+    <link href="{{ asset('assets/css/article.css') }}" rel="stylesheet"/>
+    {# {{ encore_entry_link_tags('app') }} #}
+{% endblock %}
 
 {% block body %}
-    <h1>Article index</h1>
 
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Id</th>
-                <th>Name</th>
-                <th>Reference</th>
-                <th>Content</th>
-                <th>Draft</th>
-                <th>CreatedAt</th>
-                <th>UpdateAt</th>
-                <th>actions</th>
-            </tr>
-        </thead>
-        <tbody>
-        {% for article in articles %}
-            <tr>
-                <td>{{ article.id }}</td>
-                <td>{{ article.name }}</td>
-                <td>{{ article.reference }}</td>
-                <td>{{ article.content }}</td>
-                <td>{{ article.draft ? 'Yes' : 'No' }}</td>
-                <td>{{ article.createdAt ? article.createdAt|date('Y-m-d') : '' }}</td>
-                <td>{{ article.updateAt ? article.updateAt|date('Y-m-d') : '' }}</td>
-                <td>
-                    <a href="{{ path('article_show', {'id': article.id}) }}">show</a>
-                    <a href="{{ path('article_edit', {'id': article.id}) }}">edit</a>
-                </td>
-            </tr>
-        {% else %}
-            <tr>
-                <td colspan="8">no records found</td>
-            </tr>
-        {% endfor %}
-        </tbody>
-    </table>
+    <div class="container-fluid gedf-wrapper">
+        <div class="row">
+            <div class="col-md-3">
+            </div>
+            <div class="col-md-6 gedf-main">
+                <!--- \\\\\\\Post-->
+                {% for article in articles %}
+                    <div class="card gedf-card">
+                        <div class="card-header">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div class="mr-2">
+                                        <img class="rounded-circle" width="45" src="https://picsum.photos/50/50" alt="">
+                                    </div>
+                                    <div class="ml-2">
+                                        <div class="h5 m-0">{{article.user}}</div>
+                                        <div class="h7 text-muted">{{ article.reference }}</div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <ul class="dropdown">
+                                        <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
+                                            <i class="fa fa-ellipsis-h"></i>
+                                        </button>
+                                        <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+                                            <a class="dropdown-item" href="{{ path('article_edit', {'id': article.id}) }}">edit</a>
+                                            <form method="post" action="{{ path('article_delete', {'id': article.id}) }}" onsubmit="return confirm('Are you sure you want to delete this item?');">
+                                                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ article.id) }}">
+                                                <button class="dropdown-item">Delete</button>
+                                            </form>
+                                        </ul>
+                                </div>
+                            </div>
 
+                        </div>
+                        <div class="card-body">
+                            <div class="text-muted h7 mb-2"> <i class="fa fa-clock-o"></i>{{ article.createdAt ? article.createdAt|date('Y-m-d') : '' }}</div>
+                            <a class="card-link" href="{{ path('article_show', {'id': article.id}) }}">
+                                <h5 class="card-title">{{ article.name }}</h5>
+                            </a>
+
+                            <p class="card-text">
+                                {{ article.content }}
+                            </p>
+                        </div>
+                        <div class="card-footer">
+                            {% for comment in article.comments %}
+                            <div class="card">
+                                <div class="card-header">
+                                    {{ comment.user }}
+                                </div>
+                                <div class="card-body">
+                                    <blockquote class="blockquote mb-0">
+                                        <p> {{ comment.content }}</p>
+                                        <footer class="blockquote-footer">{{ comment.createdAt |date("m/d/Y") }}</footer>
+                                    </blockquote>
+                                </div>
+                            </div>
+
+
+                            {% endfor %}
+                            <a href="{{ path('article_show', {'id': article.id}) }}" class="card-link"><i class="fa fa-comment"></i> Comment</a>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+            <div class="col-md-3">
+
+            </div>
+        </div>
+    </div>
     <a href="{{ path('article_new') }}">Create new</a>
 {% endblock %}

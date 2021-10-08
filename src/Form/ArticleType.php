@@ -16,9 +16,6 @@ class ArticleType extends AbstractType
             ->add('reference')
             ->add('content')
             ->add('draft')
-            ->add('createdAt')
-            ->add('updateAt')
-            ->add('user')
             ->add('tags')
         ;
     }

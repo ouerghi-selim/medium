@@ -44,6 +44,12 @@ class Comment
      */
     private $article;
 
+    public function __construct()
+    {
+        $this->setCreatedAt(new \DateTime());
+        $this->setUpdateAt(new \DateTime());
+    }
+
     public function getId(): ?int
     {
         return $this->id;
